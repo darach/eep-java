@@ -1,0 +1,74 @@
+<!--
+
+Copyright (c) 2013 Darach Ennis < darach at gmail dot com >.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the
+following conditions:  
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+-->
+<project name='build.xml' basedir='.' default='build'>
+	<property file='version.properties'/>
+	
+	<path id='target.path'>
+	    <pathelement location='eep-java-${project.version}.jar'/>
+	</path>
+	
+	<path id='test.path'>
+		<path refid='target.path'/>
+	    <pathelement location='build/test-classes'/>
+	    <pathelement location='lib/junit-4.8.2.jar'/>
+	</path>
+
+	<target name='clean'>
+	  <delete dir='build'/>
+	</target>
+		
+	<target name='init'>
+		<mkdir dir='build'/>
+		<mkdir dir='build/classes'/>
+		<mkdir dir='build/test-classes'/>
+		<mkdir dir='build/test-xml'/>
+		<mkdir dir='build/test-reports'/>
+	</target>
+		
+	<target name='build' depends='init'>
+		<javac srcdir="src" destdir='build/classes' debug='yes'/>
+		<copy todir="build/classes" file='version.properties'/>
+		<jar file='eep-java-${project.version}.jar' basedir='build/classes'/>
+		<javac classpathref='test.path' srcdir="test" destdir='build/test-classes' debug='yes'/>
+	</target>
+	
+    <target name="test" depends="build">
+      <junit dir="${basedir}" failureproperty="test.failure" printSummary="yes" fork="true" haltonerror="false">
+        <classpath refid='test.path'/>
+        <batchtest todir="build/test-xml">
+          <fileset dir="test">
+            <include name="**/*.java" />
+          </fileset>
+          <formatter type='xml'/>
+        </batchtest>
+      </junit>
+      <junitreport todir="build/test-xml">
+        <fileset dir="build/test-xml">
+          <include name="TEST-*.xml"/>
+        </fileset>
+        <report format="frames" todir="build/test-reports"/>
+      </junitreport>
+    </target>
+</project>
